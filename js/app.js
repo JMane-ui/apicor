@@ -1,6 +1,25 @@
 const credentials = 'YjU3ODAzODUtNWVmMi00NjUzLTljNGYtYzUzMDEwZGM4MGQyOmYwZTZlYjZkODM1YzNmOTFiNTEzMjBjMjdhMGQ3YTlh';
 var access_token = '';
 
+var progress = 0;
+function move() {
+  if (progress == 0) {
+    progress = 1;
+    var elem = document.getElementById("myBar");
+    var width = 1;
+    var id = setInterval(frame, 10);
+    function frame() {
+      if (width >= 100) {
+        clearInterval(id);
+        progress = 0;
+      } else {
+        width++;
+        elem.style.width = width + "%";
+      }
+    }
+  }
+}
+
 function access(){
     let myHeaders = new Headers();
     myHeaders.append("Authorization", `basic ${credentials}`);
@@ -28,11 +47,8 @@ function access(){
 
 access();
 
-//let mod = ['contacts', 'clients', 'projects', 'brands', 'products', 'projectTemplates', 'tasks', 'hours', 'users'];
-
-
-
 function consumo(){
+  //let mod = ['contacts', 'clients', 'projects', 'brands', 'products', 'projectTemplates', 'tasks', 'hours', 'users'];
     let mod = ['contacts', 'clients', 'projects', 'brands', 'products', 'tasks', 'hours', 'users'];
     let myHeaders = new Headers();
     myHeaders.append("Authorization", `Bearer ${access_token}`);
@@ -48,8 +64,8 @@ function consumo(){
         .then(response => {
             response.json()
             .then(result => {
-                console.log(result);
-                listar(result.lastPage, modulo);
+                //console.log(result);
+                listar(result.lastPage, modulo, result.total);
             })
             .catch(error => console.log('error', error))
         })  
@@ -60,7 +76,7 @@ function consumo(){
 
 
 
-function listar(lastPage, modulo){
+function listar(lastPage, modulo, total){
     let x = 1;
     let a = 0;
     let indexList = 0;
@@ -83,22 +99,35 @@ function listar(lastPage, modulo){
             response.json()
             .then(result => {
                 //saveData(x, result.data);
-                dataList[a] = result.data;
-                a++;
+                //dataList[a] = result.data;
+                //a++;
                 
-                console.log(access_token)
+                for (const iterator of result.data) {
+                    //console.log(iterator)
+                    dataList[a] = iterator;
+                    a++;
+                }
+
+                if(a >= total){
+                    console.log(dataList);
+                    /*
+                    dataList.forEach(item => {
+                        console.log(item);
+                    })
+                    */
+                    move();
+                }
+
+                //console.log(access_token)
             })
-            .catch(error => console.log('error', error))
+            .catch(error => {
+                console.log('Error JSON: ', error);
+                location.reload();
+            }) 
         })  
-        .catch(error => console.log('error', error));
+        .catch(error => console.log('Error conexión: ', error));
         x++;
     }
-
-    if(x > lastPage){
-        console.log(dataList);
-    }
-
+    
 }
-
-
 
